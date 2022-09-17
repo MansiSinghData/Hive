@@ -29,6 +29,8 @@ fields terminated by ','
 tblproperties("skip.header.line.count"="1")
 ; 
 
+#Loading data in CSV_table
+
 load data inpath '/Mansi/sales_order_data.csv' into table sales_order_csv;
 
 #creating table to store data in ORC format
@@ -59,7 +61,11 @@ DEALSIZE string
 )
 stored as orc;
 
+#Loading data from CSV Table to ORC_table
+
 from sales_order_csv insert overwrite table sales_order_orc select *;
+
+#Setting Header to True
 
 set hive.cli.print.header=true
 
