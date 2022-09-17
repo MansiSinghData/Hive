@@ -1,1 +1,126 @@
+#creating table to store the csv file
+
+create table sales_order_csv
+(
+ORDERNUMBER int,
+QUANTITYORDERED int,
+PRICEEACH float,
+ORDERLINENUMBER int,
+SALES float,
+STATUS string,
+QTR_ID int,
+MONTH_ID int,
+YEAR_ID int,
+PRODUCTLINE string,
+MSRP int,
+PRODUCTCODE string,
+PHONE string,
+CITY string,
+STATE string,
+POSTALCODE string,
+COUNTRY string,
+TERRITORY string,
+CONTACTLASTNAME string,
+CONTACTFIRSTNAME string,
+DEALSIZE string
+)
+row format delimited
+fields terminated by ','
+tblproperties("skip.header.line.count"="1")
+; 
+
+load data inpath '/Mansi/sales_order_data.csv' into table sales_order_csv;
+
+#creating table to store data in ORC format
+
+create table sales_order_orc
+(
+ORDERNUMBER int,
+QUANTITYORDERED int,
+PRICEEACH float,
+ORDERLINENUMBER int,
+SALES float,
+STATUS string,
+QTR_ID int,
+MONTH_ID int,
+YEAR_ID int,
+PRODUCTLINE string,
+MSRP int,
+PRODUCTCODE string,
+PHONE string,
+CITY string,
+STATE string,
+POSTALCODE string,
+COUNTRY string,
+TERRITORY string,
+CONTACTLASTNAME string,
+CONTACTFIRSTNAME string,
+DEALSIZE string
+)
+stored as orc;
+
+from sales_order_csv insert overwrite table sales_order_orc select *;
+
+set hive.cli.print.header=true
+
+#OPERATIONS
+
+
+a. Calculate total sales per year
+
+SELECT SUM(SALES) AS TOTAL_SALES ,YEAR_ID 
+FROM SALES_ORDER_ORC 
+GROUP BY YEAR_ID;
+
+b. Find a product for which maximum orders were placed
+
+SELECT SUM(QUANTITYORDERED) AS MAX_ORDERS,PRODUCT_CODE,PRODUCT_LINE 
+FROM SALES_ORDER_ORC 
+GROUP BY PRODUCT_CODE,PRODUCT_LINE 
+ORDER BY MAX_ORDERS DESC LIMIT 1;
+
+c.Calculate the total sales for each quarter
+
+SELECT SUM(QUANTITYORDERED) AS TOTAL_SALES,QTR_ID 
+FROM SALES_ORDER_ORC GROUP BY QTR_ID;
+
+d.In which quarter sales was minimum
+
+SELECT SUM(QUANTITYORDERED) AS MIN_SALES,QTR_ID 
+FROM SALES_ORDER_ORC 
+GROUP BY QTR_ID 
+ORDER BY MIN_SALES LIMIT 1;
+
+e.In which country sales was maximum and in which country sales was minimum
+
+SELECT COUNTRY,SUM(SALES) AS MAX_SALES 
+FROM SALES_ORDER_ORC 
+GROUP BY COUNTRY 
+ORDER BY MAX_SALES DESC LIMIT 1;
+
+
+SELECT COUNTRY,SUM(SALES) AS MIN_SALES
+FROM SALES_ORDER_ORC 
+GROUP BY COUNTRY 
+ORDER BY MAX_SALES LIMIT 1;
+
+f.Calculate quartelry sales for each city
+
+SELECT CITY,QTR_ID,SUM(SALES) AS SALES 
+FROM SALES_ORDER_ORC 
+GROUP BY CITY,QTR_ID
+
+g.Find a month for each year in which maximum number of quantities were sold
+
+SELECT MONTH_ID,YEAR_ID,MAX_QUANTITIES 
+FROM 
+(SELECT MONTH_ID,YEAR_ID,MAX_QUANTITIES,ROW_NUMBER() OVER (PARTITION BY YEAR_ID ORDER BY MAX_QUANTITIES DESC) AS RNK 
+FROM 
+(SELECT SUM(QUANTITYORDERED) AS MAX_QUANTITIES,YEAR_ID,MONTH_ID 
+FROM SALES_ORDER_ORC GROUP BY YEAR_ID,MAX_QUANTITIES)A)B 
+WHERE RNK=1;
+
+
+
+
 
