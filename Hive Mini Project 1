@@ -1,0 +1,85 @@
+
+1. Create a schema based on the given dataset
+
+create table agentLogingReport(
+SL_NO int,
+AGENT string,
+DATE string,
+LOGIN_TIME string,
+LOGOUT_TIME string,
+DURATION string
+)
+row format delimited
+fields terminated by ','
+tblproperties("skip.header.line.count"="1")
+
+
+
+create table agentPerformance(
+SL_NO int,
+DATE string,
+AGENT_NAME String,
+TOTAL_CHATS int,
+AVG_RESPONSE_TIME string,
+AVG_RESOLUTION_TIME string,
+AVG_RATING float,
+TOTAL_FEEDBACK int)
+row format delimited 
+fields terminated by ','
+tblproperties("skip.header.line.count"="1")
+;
+
+
+2. Dump the data inside the hdfs in the given schema location.
+
+load data local inpath 'file:///home/cloudera/pract/AgentLogingReport.csv' into table agentLogingReport;
+
+Load data local inpath "file:///home/cloudera/pract/AgentPerformance.csv" into table agentPerformance;
+
+3. List of all agents' names.
+
+select distinct(agent_name) from agentPerformance;
+
+4. Find out agent average rating.
+
+select agent_name,avg(avg_rating) as AVG_RATING from agentPerformance group by agent_name;
+
+5. Total working days for each agents
+
+select agent,count(date) as Working_days from agentLogingReport group by agent;
+
+6. Total query that each agent have taken 
+
+select agent_name,sum(total_chats) as total_queries_taken from agentperformance group by agent_name;
+
+7. Total Feedback that each agent have received 
+
+select agent_name,sum(total_feedback) as feedback_recieved_taken from agentperformance group by agent_name;
+
+8. Agent name who have average rating between 3.5 to 4
+
+select agent_name,avg(case when avg_rating<>0 then avg_rating else null end) as Avg_rating from agentperformance group by agent_name having avg_rating>=3.5 and avg_rating<=4;
+
+9. Agent name who have rating less than 3.5
+
+select agent_name,avg(case when avg_rating<>0 then avg_rating else null end) as Avg_rating from agentperformance group by agent_name having avg_rating<3.5;
+
+10. Agent name who have rating more than 4.5
+
+select agent_name,avg(case when avg_rating<>0 then avg_rating else null end) as Avg_rating from agentperformance group by agent_name having avg_rating>4.5;
+
+11. How many feedback agents have received more than 4.5 average
+
+select agent_name,sum(total_feedback) as total_feedback_recieved from (select agent_name,avg(case when avg_rating<>0 then avg_rating else null end) over 
+(partition by agent_name) as Avg_rating,total_feedback from agentperformance group by agent_name having avg_rating>4.5) a group by agent_name;
+
+12. average weekly response time for each agent 
+13. average weekly resolution time for each agents 
+
+14.Find the number of chat on which they have received a feedback
+
+select agent_name,sum(total_feedback) as feedback_recieved_taken from agentperformance group by agent_name;
+
+15. Total contribution hour for each and every agents weekly basis 
+16. Perform inner join, left join and right join based on the agent column and after joining the table export that data into your local system.
+17. Perform partitioning on top of the agent column and then on top of that perform bucketing for each partitioning.
