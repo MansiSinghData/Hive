@@ -74,12 +74,23 @@ select agent_name,sum(total_feedback) as total_feedback_recieved from (select ag
 (partition by agent_name) as Avg_rating,total_feedback from agentperformance group by agent_name having avg_rating>4.5) a group by agent_name;
 
 12. average weekly response time for each agent 
+
+select agent_name,weekofyear(date) as week_number,int(round(avg(unix_timestamp(AVG_RESPONSE_TIME,"HH:mm:ss")-28800))) as AVGerage_RESPONSE_TIME from agent_performance group by agent_name,weekofyear(date);
+
 13. average weekly resolution time for each agents 
+
+select agent_name,weekofyear(date) as week_number,int(round(avg(unix_timestamp(avg_resolution_time,"HH:mm:ss")-28800))) as average_resolution_time from agent_performance group by agent_name,weekofyear(date);
 
 14.Find the number of chat on which they have received a feedback
 
 select agent_name,sum(total_feedback) as feedback_recieved_taken from agentperformance group by agent_name;
 
 15. Total contribution hour for each and every agents weekly basis 
+
+select agent,weekofyear(from_unixtime(unix_timestamp(date,'dd-MMM-yy'),'yyyy-MM-dd')) as week_num,int(round(sum(unix_timestamp(duration,"HH:mm:ss")-28800)))
+as total_time_spent_in_sec from agentlogingreport group by agent,weekofyear(from_unixtime(unix_timestamp(date,'dd-MMM-yy'),'yyyy-MM-dd')) ;
+
 16. Perform inner join, left join and right join based on the agent column and after joining the table export that data into your local system.
+
+
 17. Perform partitioning on top of the agent column and then on top of that perform bucketing for each partitioning.
